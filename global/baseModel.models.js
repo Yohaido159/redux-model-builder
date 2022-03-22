@@ -4,7 +4,6 @@ import { sendToProcessAction, wrapAction } from "saga-axios/core";
 import { makeToUrl, makeGetUrl, withQueryParams } from "../utils/urls";
 import { getFromState } from "../utils/utils";
 import { setAddToRedux } from "./global.actions";
-// import { useUIActions } from "../redux/UI/UI.actions";
 
 export class BaseModel {
   constructor() {
@@ -39,9 +38,6 @@ export class BaseModel {
 
     const { withModel = true, withUpdateRedux = true } = config;
 
-    console.log("options", options);
-    console.log("BaseModel.dispatch", BaseModel.dispatch);
-    if (!BaseModel.dispatch) return;
     BaseModel.dispatch(
       sendToProcessAction({
         actionsBefore: [
@@ -124,7 +120,7 @@ const getPath = (options) => {
   if (config.path) {
     return config.path;
   } else {
-    if (["post", "patch", "delete"].includes(method.toUpperCase()) !== -1) {
+    if (["POST", "PATCH", "DELETE"].includes(method.toUpperCase()) !== -1) {
       return thisRef.itemsPath(data);
     } else {
       return thisRef.itemPath(thisRef.itemsPath(data), data);
