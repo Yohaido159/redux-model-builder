@@ -1,0 +1,23 @@
+{
+  "name": "redux-model-builder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yohaido159/redux-model-builder.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Yohaido159/redux-model-builder/issues"
+  },
+  "homepage": "https://github.com/Yohaido159/redux-model-builder#readme",
+  "dependencies": {
+    "lodash.endswith": "^4.2.1",
+    "saga-axios": "^1.0.3"
+  }
+}
