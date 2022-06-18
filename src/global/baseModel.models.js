@@ -22,14 +22,9 @@ export class BaseModel {
       this._dispatch = dispatch;
     }
   }
-  static set setBaseSelector(baseSelector) {
-    if (baseSelector) {
-      this._baseSelector = baseSelector;
-    }
-  }
+
   static baseSelector(type, type_selector) {
-    console.log("type, type_selector", type, type_selector);
-    return this._baseSelector(type, type_selector);
+    return baseSelector(type, type_selector);
   }
   static dispatch(options) {
     return this._dispatch(options);
@@ -359,8 +354,6 @@ export class BaseModel {
     //   path = `${path}.${more_data.field_name}`;
     // }
     // return path;
-
-    
   }
 
   selectorItem(more_data, config, defaultValue) {

@@ -484,17 +484,9 @@ var BaseModel = /*#__PURE__*/function () {
       }
     }
   }, {
-    key: "setBaseSelector",
-    set: function set(baseSelector) {
-      if (baseSelector) {
-        this._baseSelector = baseSelector;
-      }
-    }
-  }, {
     key: "baseSelector",
     value: function baseSelector(type, type_selector) {
-      console.log("type, type_selector", type, type_selector);
-      return this._baseSelector(type, type_selector);
+      return (0, _global2.baseSelector)(type, type_selector);
     }
   }, {
     key: "dispatch",
