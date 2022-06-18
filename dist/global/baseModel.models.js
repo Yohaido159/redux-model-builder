@@ -44,6 +44,7 @@ var BaseModel = /*#__PURE__*/function () {
     this.effect = "replace";
     this.type = undefined;
     this.url = undefined;
+    throw new Error("BaseModel.makeActionsBefore must be override");
   }
 
   (0, _createClass2["default"])(BaseModel, [{

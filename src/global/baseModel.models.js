@@ -12,6 +12,7 @@ export class BaseModel {
     this.effect = "replace";
     this.type = undefined;
     this.url = undefined;
+    throw new Error("BaseModel.makeActionsBefore must be override");
   }
 
   static makeActionsBefore = ({ options, config }) => [];
