@@ -1,24 +1,38 @@
 import { createCachedSelector } from "re-reselect";
+import { createSelectorCreator, defaultMemoize } from "reselect";
 import get from "lodash.get";
 
-export let baseSelector =
-  (type, selector_type) => (path, returnDefault, config) => {
-    let baseId = selector_type === "base" ? `items_main` : `global_main`;
-    const func = (state) => {
-      if (Array.isArray(state)) {
-        return state;
-      } else {
-        const res = Object.values(state || {});
-        return res;
-      }
-    };
+const strEqual = (value, other) => {
+  return JSON.stringify(value) === JSON.stringify(other);
+};
+const selectorState = {};
+const selectById2 = (state, id, id2) => [id, id2];
+export const strEqualSelector = createSelectorCreator(defaultMemoize, strEqual);
 
-    return makeSelector({ baseId, path, returnDefault, func, config, type });
+export let baseSelector = (reducer_name, path, returnDefault, config = {}) => {
+  const with_func = config.with_func === undefined ? true : config.with_func;
+
+  const func = (state) => {
+    if (Array.isArray(state)) {
+      return state;
+    } else {
+      const res = Object.values(state || {});
+      return res;
+    }
   };
 
+  return makeSelector({
+    baseId: reducer_name,
+    path,
+    returnDefault,
+    with_func,
+    func: with_func ? func : null,
+    config,
+  });
+};
+
 export const makeSelector = (options = {}) => {
-  let { baseId, path, returnDefault, func, config = {} } = options;
-  const { with_func = true } = config;
+  let { baseId, path, returnDefault, with_func, func } = options;
 
   path = makePath(path);
   baseId = `${baseId}${path}`;
@@ -26,13 +40,14 @@ export const makeSelector = (options = {}) => {
   const baseIdCacheKey = `${baseId}${path}-with_func=${with_func}-returnDefault=${JSON.stringify(
     returnDefault
   )}`;
+
   if (getFromCache(baseIdCacheKey)) {
     return getFromCache(baseIdCacheKey);
   } else {
     const selector = factorySelector({
       baseId,
       returnDefault: returnDefaultNew,
-      func: with_func ? func : undefined,
+      func,
     });
     addToCache(baseIdCacheKey, selector);
     return selector;

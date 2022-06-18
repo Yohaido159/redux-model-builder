@@ -36,15 +36,10 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 var BaseModel = /*#__PURE__*/function () {
   function BaseModel() {
     (0, _classCallCheck2["default"])(this, BaseModel);
-    (0, _defineProperty2["default"])(this, "itemsSelector", BaseModel.baseSelector("list", "base"));
-    (0, _defineProperty2["default"])(this, "itemSelector", BaseModel.baseSelector("detail", "base"));
-    (0, _defineProperty2["default"])(this, "itemsPassDataSelector", BaseModel.baseSelector("list", "passData"));
-    (0, _defineProperty2["default"])(this, "itemPassDataSelector", BaseModel.baseSelector("detail", "passData"));
     (0, _defineProperty2["default"])(this, "runDebounce", null);
     this.effect = "replace";
     this.type = undefined;
     this.url = undefined;
-    throw new Error("BaseModel.makeActionsBefore must be override");
   }
 
   (0, _createClass2["default"])(BaseModel, [{
@@ -229,13 +224,9 @@ var BaseModel = /*#__PURE__*/function () {
         path = this.itemsPath(data);
       }
 
-      console.log("path", path);
-
       if (fieldPath) {
         path = this.fieldPath(path, data);
       }
-
-      console.log("path", path);
 
       if (fieldPathIdx && fieldPath) {
         path = this.fieldPathIdx(path, data);
@@ -376,85 +367,138 @@ var BaseModel = /*#__PURE__*/function () {
           resPath: resPath
         })
       }, config));
+    } // reduxSelectItem(options = {}) {
+    //   const { config, more_data, defaultValue } = options;
+    //   if (config.detail) {
+    //     return this.selectorItem(more_data, config, defaultValue);
+    //   } else {
+    //     return this.selectorItems(more_data, config, defaultValue);
+    //   }
+    // }
+
+  }, {
+    key: "newItemsPath",
+    value: function newItemsPath() {
+      var data_wrap = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      if (data_wrap.postfix) {
+        return "".concat(this.base_path, ".").concat(data_wrap.postfix);
+      }
+
+      return this.base_path;
     }
   }, {
-    key: "reduxSelectItem",
-    value: function reduxSelectItem() {
+    key: "newItemPath",
+    value: function newItemPath() {
+      var data_wrap = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var prev_path = this.newItemsPath(data_wrap);
+      return "".concat(prev_path, ".").concat(data_wrap.id);
+    }
+  }, {
+    key: "newFieldPath",
+    value: function newFieldPath() {
+      var data_wrap = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var prev_path = this.newItemPath(data_wrap);
+      return "".concat(prev_path, ".").concat(data_wrap.field_name);
+    }
+  }, {
+    key: "selectAll",
+    value: function selectAll() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var config = options.config,
-          more_data = options.more_data,
-          defaultValue = options.defaultValue;
-
-      if (config.detail) {
-        return this.selectorItem(more_data, config, defaultValue);
-      } else {
-        return this.selectorItems(more_data, config, defaultValue);
-      }
+      var data_wrap = options.data_wrap,
+          returnDefault = options.returnDefault;
+      var path = this.newItemsPath(data_wrap);
+      console.log("🚀 ~ file: baseModel.models.js ~ line 338 ~ BaseModel ~ selectAll ~ path", path);
+      return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault);
     }
   }, {
-    key: "makeSelectorPath",
-    value: function makeSelectorPath(more_data, config) {
-      var detail = config.detail;
-      var fieldPath = config.fieldPath;
-      var fieldPathIdx = config.fieldPathIdx;
-      var path = config.makePath ? config.makePath(config, {
-        data: {
-          more_data: more_data,
-          data: {}
-        }
-      }) : this.makePath({
-        fieldPath: fieldPath,
-        fieldPathIdx: fieldPathIdx,
-        detail: detail,
-        data: {
-          more_data: more_data
-        }
+    key: "selectGetById",
+    value: function selectGetById(options) {
+      var data_wrap = options.data_wrap,
+          returnDefault = options.returnDefault;
+      var path = this.newItemPath(data_wrap);
+      return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
+        with_func: false
       });
-      console.log("11path", path);
-      return path; // let path = "";
-      // if (more_data.base_item) {
-      //   path = `${more_data.base_item}`;
-      // } else if (this.selector_type === "base") {
-      //   path = `${this.base_path}`;
-      // } else if (this.selector_type === "passData") {
-      //   path = `${this.pass_data_path}`;
-      // }
-      // if (config.detail) {
-      //   if (this.isList === false) {
-      //   } else {
-      //     path = `${path}.${more_data.id}`;
-      //   }
-      // }
-      // if (config.fieldPath) {
-      //   path = `${path}.${more_data.field_name}`;
-      // }
-      // return path;
     }
   }, {
-    key: "selectorItem",
-    value: function selectorItem(more_data, config, defaultValue) {
-      if (this.selector_type === "base") {
-        return this.itemSelector(this.makeSelectorPath(more_data, config), defaultValue, config);
-      } else if (this.selector_type === "passData") {
-        return this.itemPassDataSelector(this.makeSelectorPath(more_data, config), defaultValue, config);
-      }
-    }
-  }, {
-    key: "selectorItems",
-    value: function selectorItems(more_data, config, defaultValue) {
-      console.log("this.selector_type", {
-        selector_type: this.selector_type,
-        more_data: more_data,
-        config: config,
-        defaultValue: defaultValue
+    key: "selectField",
+    value: function selectField(options) {
+      var data_wrap = options.data_wrap,
+          returnDefault = options.returnDefault;
+      var path = this.newFieldPath(data_wrap);
+      return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
+        with_func: false
       });
+    } // makeSelectorPath(more_data, config) {
+    //   const detail = config.detail;
+    //   const fieldPath = config.fieldPath;
+    //   const fieldPathIdx = config.fieldPathIdx;
+    //   let path = config.makePath
+    //     ? config.makePath(config, { data: { more_data, data: {} } })
+    //     : this.makePath({
+    //         fieldPath,
+    //         fieldPathIdx,
+    //         detail,
+    //         data: {
+    //           more_data,
+    //         },
+    //       });
+    //   return path;
+    // let path = "";
+    // if (more_data.base_item) {
+    //   path = `${more_data.base_item}`;
+    // } else if (this.selector_type === "base") {
+    //   path = `${this.base_path}`;
+    // } else if (this.selector_type === "passData") {
+    //   path = `${this.pass_data_path}`;
+    // }
+    // if (config.detail) {
+    //   if (this.isList === false) {
+    //   } else {
+    //     path = `${path}.${more_data.id}`;
+    //   }
+    // }
+    // if (config.fieldPath) {
+    //   path = `${path}.${more_data.field_name}`;
+    // }
+    // return path;
+    // }
+    // selectorItem(more_data, config, defaultValue) {
+    //   if (this.selector_type === "base") {
+    //     return this.itemSelector(
+    //       this.makeSelectorPath(more_data, config),
+    //       defaultValue,
+    //       config
+    //     );
+    //   } else if (this.selector_type === "passData") {
+    //     return this.itemPassDataSelector(
+    //       this.makeSelectorPath(more_data, config),
+    //       defaultValue,
+    //       config
+    //     );
+    //   }
+    // }
+    // selectorItems(more_data, config, defaultValue) {
+    //   if (this.selector_type === "base") {
+    //     return this.itemsSelector(
+    //       this.makeSelectorPath(more_data, config),
+    //       defaultValue,
+    //       config
+    //     );
+    //   } else if (this.selector_type === "passData") {
+    //     return this.itemsPassDataSelector(
+    //       this.makeSelectorPath(more_data, config),
+    //       defaultValue,
+    //       config
+    //     );
+    //   }
+    // }
+    // itemsSelector = BaseModel.baseSelector("list", "base");
+    // itemSelector = BaseModel.baseSelector("detail", "base");
+    // itemsPassDataSelector = BaseModel.baseSelector("list", "passData");
+    // itemPassDataSelector = BaseModel.baseSelector("detail", "passData");
 
-      if (this.selector_type === "base") {
-        return this.itemsSelector(this.makeSelectorPath(more_data, config), defaultValue, config);
-      } else if (this.selector_type === "passData") {
-        return this.itemsPassDataSelector(this.makeSelectorPath(more_data, config), defaultValue, config);
-      }
-    }
   }, {
     key: "preProcessData",
     value: function preProcessData(data, config) {
@@ -483,11 +527,6 @@ var BaseModel = /*#__PURE__*/function () {
       if (dispatch) {
         this._dispatch = dispatch;
       }
-    }
-  }, {
-    key: "baseSelector",
-    value: function baseSelector(type, type_selector) {
-      return (0, _global2.baseSelector)(type, type_selector);
     }
   }, {
     key: "dispatch",

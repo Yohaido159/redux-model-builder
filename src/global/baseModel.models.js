@@ -12,7 +12,6 @@ export class BaseModel {
     this.effect = "replace";
     this.type = undefined;
     this.url = undefined;
-    throw new Error("BaseModel.makeActionsBefore must be override");
   }
 
   static makeActionsBefore = ({ options, config }) => [];
@@ -24,9 +23,6 @@ export class BaseModel {
     }
   }
 
-  static baseSelector(type, type_selector) {
-    return baseSelector(type, type_selector);
-  }
   static dispatch(options) {
     return this._dispatch(options);
   }
@@ -184,12 +180,10 @@ export class BaseModel {
     } else {
       path = this.itemsPath(data);
     }
-    console.log("path", path);
 
     if (fieldPath) {
       path = this.fieldPath(path, data);
     }
-    console.log("path", path);
     if (fieldPathIdx && fieldPath) {
       path = this.fieldPathIdx(path, data);
     }
@@ -311,94 +305,131 @@ export class BaseModel {
     });
   }
 
-  reduxSelectItem(options = {}) {
-    const { config, more_data, defaultValue } = options;
-    if (config.detail) {
-      return this.selectorItem(more_data, config, defaultValue);
-    } else {
-      return this.selectorItems(more_data, config, defaultValue);
+  // reduxSelectItem(options = {}) {
+  //   const { config, more_data, defaultValue } = options;
+  //   if (config.detail) {
+  //     return this.selectorItem(more_data, config, defaultValue);
+  //   } else {
+  //     return this.selectorItems(more_data, config, defaultValue);
+  //   }
+  // }
+
+  newItemsPath(data_wrap = {}) {
+    if (data_wrap.postfix) {
+      return `${this.base_path}.${data_wrap.postfix}`;
     }
+    return this.base_path;
   }
 
-  makeSelectorPath(more_data, config) {
-    const detail = config.detail;
-    const fieldPath = config.fieldPath;
-    const fieldPathIdx = config.fieldPathIdx;
-    let path = config.makePath
-      ? config.makePath(config, { data: { more_data, data: {} } })
-      : this.makePath({
-          fieldPath,
-          fieldPathIdx,
-          detail,
-          data: {
-            more_data,
-          },
-        });
-    console.log("11path", path);
-    return path;
-
-    // let path = "";
-    // if (more_data.base_item) {
-    //   path = `${more_data.base_item}`;
-    // } else if (this.selector_type === "base") {
-    //   path = `${this.base_path}`;
-    // } else if (this.selector_type === "passData") {
-    //   path = `${this.pass_data_path}`;
-    // }
-    // if (config.detail) {
-    //   if (this.isList === false) {
-    //   } else {
-    //     path = `${path}.${more_data.id}`;
-    //   }
-    // }
-    // if (config.fieldPath) {
-    //   path = `${path}.${more_data.field_name}`;
-    // }
-    // return path;
+  newItemPath(data_wrap = {}) {
+    const prev_path = this.newItemsPath(data_wrap);
+    return `${prev_path}.${data_wrap.id}`;
   }
 
-  selectorItem(more_data, config, defaultValue) {
-    if (this.selector_type === "base") {
-      return this.itemSelector(
-        this.makeSelectorPath(more_data, config),
-        defaultValue,
-        config
-      );
-    } else if (this.selector_type === "passData") {
-      return this.itemPassDataSelector(
-        this.makeSelectorPath(more_data, config),
-        defaultValue,
-        config
-      );
-    }
+  newFieldPath(data_wrap = {}) {
+    const prev_path = this.newItemPath(data_wrap);
+    return `${prev_path}.${data_wrap.field_name}`;
   }
-  selectorItems(more_data, config, defaultValue) {
-    console.log("this.selector_type", {
-      selector_type: this.selector_type,
-      more_data,
-      config,
-      defaultValue,
+
+  selectAll(options = {}) {
+    const { data_wrap, returnDefault } = options;
+
+    const path = this.newItemsPath(data_wrap);
+    console.log(
+      "🚀 ~ file: baseModel.models.js ~ line 338 ~ BaseModel ~ selectAll ~ path",
+      path
+    );
+    return baseSelector(this.reducer_name, path, returnDefault);
+  }
+
+  selectGetById(options) {
+    const { data_wrap, returnDefault } = options;
+    const path = this.newItemPath(data_wrap);
+    return baseSelector(this.reducer_name, path, returnDefault, {
+      with_func: false,
     });
-    if (this.selector_type === "base") {
-      return this.itemsSelector(
-        this.makeSelectorPath(more_data, config),
-        defaultValue,
-        config
-      );
-    } else if (this.selector_type === "passData") {
-      return this.itemsPassDataSelector(
-        this.makeSelectorPath(more_data, config),
-        defaultValue,
-        config
-      );
-    }
   }
 
-  itemsSelector = BaseModel.baseSelector("list", "base");
-  itemSelector = BaseModel.baseSelector("detail", "base");
+  selectField(options) {
+    const { data_wrap, returnDefault } = options;
+    const path = this.newFieldPath(data_wrap);
+    return baseSelector(this.reducer_name, path, returnDefault, {
+      with_func: false,
+    });
+  }
 
-  itemsPassDataSelector = BaseModel.baseSelector("list", "passData");
-  itemPassDataSelector = BaseModel.baseSelector("detail", "passData");
+  // makeSelectorPath(more_data, config) {
+  //   const detail = config.detail;
+  //   const fieldPath = config.fieldPath;
+  //   const fieldPathIdx = config.fieldPathIdx;
+  //   let path = config.makePath
+  //     ? config.makePath(config, { data: { more_data, data: {} } })
+  //     : this.makePath({
+  //         fieldPath,
+  //         fieldPathIdx,
+  //         detail,
+  //         data: {
+  //           more_data,
+  //         },
+  //       });
+  //   return path;
+
+  // let path = "";
+  // if (more_data.base_item) {
+  //   path = `${more_data.base_item}`;
+  // } else if (this.selector_type === "base") {
+  //   path = `${this.base_path}`;
+  // } else if (this.selector_type === "passData") {
+  //   path = `${this.pass_data_path}`;
+  // }
+  // if (config.detail) {
+  //   if (this.isList === false) {
+  //   } else {
+  //     path = `${path}.${more_data.id}`;
+  //   }
+  // }
+  // if (config.fieldPath) {
+  //   path = `${path}.${more_data.field_name}`;
+  // }
+  // return path;
+  // }
+
+  // selectorItem(more_data, config, defaultValue) {
+  //   if (this.selector_type === "base") {
+  //     return this.itemSelector(
+  //       this.makeSelectorPath(more_data, config),
+  //       defaultValue,
+  //       config
+  //     );
+  //   } else if (this.selector_type === "passData") {
+  //     return this.itemPassDataSelector(
+  //       this.makeSelectorPath(more_data, config),
+  //       defaultValue,
+  //       config
+  //     );
+  //   }
+  // }
+  // selectorItems(more_data, config, defaultValue) {
+  //   if (this.selector_type === "base") {
+  //     return this.itemsSelector(
+  //       this.makeSelectorPath(more_data, config),
+  //       defaultValue,
+  //       config
+  //     );
+  //   } else if (this.selector_type === "passData") {
+  //     return this.itemsPassDataSelector(
+  //       this.makeSelectorPath(more_data, config),
+  //       defaultValue,
+  //       config
+  //     );
+  //   }
+  // }
+
+  // itemsSelector = BaseModel.baseSelector("list", "base");
+  // itemSelector = BaseModel.baseSelector("detail", "base");
+
+  // itemsPassDataSelector = BaseModel.baseSelector("list", "passData");
+  // itemPassDataSelector = BaseModel.baseSelector("detail", "passData");
 
   preProcessData(data, config) {
     return data;
