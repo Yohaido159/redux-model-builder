@@ -47,9 +47,6 @@ var BaseModel = /*#__PURE__*/function () {
     value: function withCache() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var cacheKey = "".concat((0, _urls.withQueryParams)((0, _urls.makeToUrl)(this.url, options.id), options.params));
-      console.log("cacheKey", cacheKey);
-      console.log("BaseModel.cacheSet", BaseModel.cacheSet);
-      console.log("config.withCache", options.config.withCache);
       return cacheKey;
     }
   }, {
@@ -367,15 +364,7 @@ var BaseModel = /*#__PURE__*/function () {
           resPath: resPath
         })
       }, config));
-    } // reduxSelectItem(options = {}) {
-    //   const { config, more_data, defaultValue } = options;
-    //   if (config.detail) {
-    //     return this.selectorItem(more_data, config, defaultValue);
-    //   } else {
-    //     return this.selectorItems(more_data, config, defaultValue);
-    //   }
-    // }
-
+    }
   }, {
     key: "newItemsPath",
     value: function newItemsPath() {
@@ -408,7 +397,6 @@ var BaseModel = /*#__PURE__*/function () {
       var data_wrap = options.data_wrap,
           returnDefault = options.returnDefault;
       var path = this.newItemsPath(data_wrap);
-      console.log("🚀 ~ file: baseModel.models.js ~ line 338 ~ BaseModel ~ selectAll ~ path", path);
       return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault);
     }
   }, {
@@ -430,75 +418,7 @@ var BaseModel = /*#__PURE__*/function () {
       return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
         with_func: false
       });
-    } // makeSelectorPath(more_data, config) {
-    //   const detail = config.detail;
-    //   const fieldPath = config.fieldPath;
-    //   const fieldPathIdx = config.fieldPathIdx;
-    //   let path = config.makePath
-    //     ? config.makePath(config, { data: { more_data, data: {} } })
-    //     : this.makePath({
-    //         fieldPath,
-    //         fieldPathIdx,
-    //         detail,
-    //         data: {
-    //           more_data,
-    //         },
-    //       });
-    //   return path;
-    // let path = "";
-    // if (more_data.base_item) {
-    //   path = `${more_data.base_item}`;
-    // } else if (this.selector_type === "base") {
-    //   path = `${this.base_path}`;
-    // } else if (this.selector_type === "passData") {
-    //   path = `${this.pass_data_path}`;
-    // }
-    // if (config.detail) {
-    //   if (this.isList === false) {
-    //   } else {
-    //     path = `${path}.${more_data.id}`;
-    //   }
-    // }
-    // if (config.fieldPath) {
-    //   path = `${path}.${more_data.field_name}`;
-    // }
-    // return path;
-    // }
-    // selectorItem(more_data, config, defaultValue) {
-    //   if (this.selector_type === "base") {
-    //     return this.itemSelector(
-    //       this.makeSelectorPath(more_data, config),
-    //       defaultValue,
-    //       config
-    //     );
-    //   } else if (this.selector_type === "passData") {
-    //     return this.itemPassDataSelector(
-    //       this.makeSelectorPath(more_data, config),
-    //       defaultValue,
-    //       config
-    //     );
-    //   }
-    // }
-    // selectorItems(more_data, config, defaultValue) {
-    //   if (this.selector_type === "base") {
-    //     return this.itemsSelector(
-    //       this.makeSelectorPath(more_data, config),
-    //       defaultValue,
-    //       config
-    //     );
-    //   } else if (this.selector_type === "passData") {
-    //     return this.itemsPassDataSelector(
-    //       this.makeSelectorPath(more_data, config),
-    //       defaultValue,
-    //       config
-    //     );
-    //   }
-    // }
-    // itemsSelector = BaseModel.baseSelector("list", "base");
-    // itemSelector = BaseModel.baseSelector("detail", "base");
-    // itemsPassDataSelector = BaseModel.baseSelector("list", "passData");
-    // itemPassDataSelector = BaseModel.baseSelector("detail", "passData");
-
+    }
   }, {
     key: "preProcessData",
     value: function preProcessData(data, config) {

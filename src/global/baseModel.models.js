@@ -34,9 +34,6 @@ export class BaseModel {
       makeToUrl(this.url, options.id),
       options.params
     )}`;
-    console.log("cacheKey", cacheKey);
-    console.log("BaseModel.cacheSet", BaseModel.cacheSet);
-    console.log("config.withCache", options.config.withCache);
     return cacheKey;
   }
 
@@ -305,15 +302,6 @@ export class BaseModel {
     });
   }
 
-  // reduxSelectItem(options = {}) {
-  //   const { config, more_data, defaultValue } = options;
-  //   if (config.detail) {
-  //     return this.selectorItem(more_data, config, defaultValue);
-  //   } else {
-  //     return this.selectorItems(more_data, config, defaultValue);
-  //   }
-  // }
-
   newItemsPath(data_wrap = {}) {
     if (data_wrap.postfix) {
       return `${this.base_path}.${data_wrap.postfix}`;
@@ -335,10 +323,7 @@ export class BaseModel {
     const { data_wrap, returnDefault } = options;
 
     const path = this.newItemsPath(data_wrap);
-    console.log(
-      "🚀 ~ file: baseModel.models.js ~ line 338 ~ BaseModel ~ selectAll ~ path",
-      path
-    );
+
     return baseSelector(this.reducer_name, path, returnDefault);
   }
 
@@ -357,79 +342,6 @@ export class BaseModel {
       with_func: false,
     });
   }
-
-  // makeSelectorPath(more_data, config) {
-  //   const detail = config.detail;
-  //   const fieldPath = config.fieldPath;
-  //   const fieldPathIdx = config.fieldPathIdx;
-  //   let path = config.makePath
-  //     ? config.makePath(config, { data: { more_data, data: {} } })
-  //     : this.makePath({
-  //         fieldPath,
-  //         fieldPathIdx,
-  //         detail,
-  //         data: {
-  //           more_data,
-  //         },
-  //       });
-  //   return path;
-
-  // let path = "";
-  // if (more_data.base_item) {
-  //   path = `${more_data.base_item}`;
-  // } else if (this.selector_type === "base") {
-  //   path = `${this.base_path}`;
-  // } else if (this.selector_type === "passData") {
-  //   path = `${this.pass_data_path}`;
-  // }
-  // if (config.detail) {
-  //   if (this.isList === false) {
-  //   } else {
-  //     path = `${path}.${more_data.id}`;
-  //   }
-  // }
-  // if (config.fieldPath) {
-  //   path = `${path}.${more_data.field_name}`;
-  // }
-  // return path;
-  // }
-
-  // selectorItem(more_data, config, defaultValue) {
-  //   if (this.selector_type === "base") {
-  //     return this.itemSelector(
-  //       this.makeSelectorPath(more_data, config),
-  //       defaultValue,
-  //       config
-  //     );
-  //   } else if (this.selector_type === "passData") {
-  //     return this.itemPassDataSelector(
-  //       this.makeSelectorPath(more_data, config),
-  //       defaultValue,
-  //       config
-  //     );
-  //   }
-  // }
-  // selectorItems(more_data, config, defaultValue) {
-  //   if (this.selector_type === "base") {
-  //     return this.itemsSelector(
-  //       this.makeSelectorPath(more_data, config),
-  //       defaultValue,
-  //       config
-  //     );
-  //   } else if (this.selector_type === "passData") {
-  //     return this.itemsPassDataSelector(
-  //       this.makeSelectorPath(more_data, config),
-  //       defaultValue,
-  //       config
-  //     );
-  //   }
-  // }
-
-  // itemsSelector = BaseModel.baseSelector("list", "base");
-  // itemSelector = BaseModel.baseSelector("detail", "base");
-
-  // itemsPassDataSelector = BaseModel.baseSelector("list", "passData");
-  // itemPassDataSelector = BaseModel.baseSelector("detail", "passData");
 
   preProcessData(data, config) {
     return data;
