@@ -359,6 +359,8 @@ export class BaseModel {
     //   path = `${path}.${more_data.field_name}`;
     // }
     // return path;
+
+    
   }
 
   selectorItem(more_data, config, defaultValue) {
