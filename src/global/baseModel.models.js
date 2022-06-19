@@ -116,7 +116,8 @@ export class BaseModel {
       ...options,
       config: {
         effect: "replace",
-        detail: false,
+        // detail: false,
+        isMany: true,
         withModel: false,
         ...options.config,
       },
@@ -129,7 +130,8 @@ export class BaseModel {
       method: "POST",
       config: {
         effect: "replace",
-        detail: true,
+        // detail: true,
+        isOne: true,
         ...options.config,
       },
       ...options,
@@ -140,7 +142,8 @@ export class BaseModel {
     this.actionItem({
       method: "PATCH",
       config: {
-        detail: true,
+        // detail: true,
+        isOne: true,
         effect: "modify",
         ...options.config,
       },
@@ -153,7 +156,8 @@ export class BaseModel {
       method: "DELETE",
       ...options,
       config: {
-        detail: true,
+        // detail: true,
+        isOne: true,
         effect: "delete",
         ...options.config,
       },
@@ -169,65 +173,23 @@ export class BaseModel {
   }
 
   makePath(options = {}) {
-    const { fieldPath, fieldPathIdx, detail, data } = options;
-    let path = null;
+    const { isMany, isOne, isField, wrap_data } = options;
 
-    if (detail) {
-      path = this.itemPath(this.itemsPath(data), data);
-    } else {
-      path = this.itemsPath(data);
-    }
-
-    if (fieldPath) {
-      path = this.fieldPath(path, data);
-    }
-    if (fieldPathIdx && fieldPath) {
-      path = this.fieldPathIdx(path, data);
-    }
-    return path;
-  }
-
-  itemsPath(data) {
-    if (data.more_data.base_item) {
-      if (this.selector_type === "base") {
-        return `items.${data.more_data.base_item}`;
-      } else if (this.selector_type === "passData") {
-        return `passData.MainPage.${data.more_data.base_item}`;
-      }
-    } else {
-      if (this.selector_type === "base") {
-        return `items.${this.base_path}`;
-      } else if (this.selector_type === "passData") {
-        return `passData.MainPage.${this.pass_data_path}`;
-      }
-    }
-  }
-
-  itemPath(path, data) {
-    if (data.more_data.id) {
-      return `${path}.${data.more_data.id}`;
-    } else if (this.selector_type === "base") {
-      return `${path}.${data.data.id}`;
-    } else if (this.selector_type === "passData") {
-      if (this.isList === false) {
-        return `${path}`;
-      }
-      return `${path}.${data.more_data.id}`;
-    }
-  }
-
-  fieldPath(item_path, data) {
-    if (this.selector_type === "base") {
-      return `${item_path}.${data.more_data.field_name}`;
-    } else if (this.selector_type === "passData") {
-      return `${item_path}.${data.more_data.field_name}`;
-    }
-  }
-  fieldPathIdx(field_path, data) {
-    if (this.selector_type === "base") {
-      return `${field_path}.${data.more_data.field_path_idx}`;
-    } else if (this.selector_type === "passData") {
-      return `${field_path}.${data.more_data.field_path_idx}`;
+    if (isField) {
+      return this.fieldPath(
+        this.itemPath(
+          this.postfixPath(this.itemsPath(wrap_data), wrap_data),
+          wrap_data
+        ),
+        wrap_data
+      );
+    } else if (isOne) {
+      return this.itemPath(
+        this.postfixPath(this.itemsPath(wrap_data), wrap_data),
+        wrap_data
+      );
+    } else if (isMany) {
+      return this.postfixPath(this.itemsPath(wrap_data), wrap_data);
     }
   }
 
@@ -236,10 +198,13 @@ export class BaseModel {
     let path = config.makePath
       ? config.makePath(config, data)
       : this.makePath({
-          detail: config.detail,
-          fieldPath: config.fieldPath,
-          fieldPathIdx: config.fieldPathIdx,
-          data,
+          // detail: config.detail,
+          // fieldPath: config.fieldPath,
+          // fieldPathIdx: config.fieldPathIdx,
+          isMany: config.isMany,
+          isOne: config.isOne,
+          isField: config.isField,
+          wrap_data: data.more_data,
         });
     this.makeDelay(config, BaseModel.dispatch.bind(BaseModel), [
       this.reduxSetActionItem({
@@ -254,7 +219,8 @@ export class BaseModel {
       ...options,
       config: {
         effect: "replace",
-        detail: false,
+        // detail: false,
+        isMany: true,
         ...options.config,
       },
     });
@@ -263,7 +229,8 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        detail: true,
+        // detail: true,
+        isOne: true,
         effect: "replace",
         ...options.config,
       },
@@ -273,7 +240,8 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        detail: true,
+        // detail: true,
+        isOne: true,
         effect: "modify",
         ...options.config,
       },
@@ -283,7 +251,8 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        detail: true,
+        // detail: true,
+        isOne: true,
         effect: "delete",
         ...options.config,
       },
@@ -302,42 +271,65 @@ export class BaseModel {
     });
   }
 
-  newItemsPath(data_wrap = {}) {
-    if (data_wrap.postfix) {
-      return `${this.base_path}.${data_wrap.postfix}`;
-    }
+  itemsPath(wrap_data = {}) {
     return this.base_path;
   }
 
-  newItemPath(data_wrap = {}) {
-    const prev_path = this.newItemsPath(data_wrap);
-    return `${prev_path}.${data_wrap.id}`;
+  itemPath(prev_path, wrap_data = {}) {
+    if (this.is_singular) {
+      return prev_path;
+    }
+    return `${prev_path}.${wrap_data.id}`;
   }
 
-  newFieldPath(data_wrap = {}) {
-    const prev_path = this.newItemPath(data_wrap);
-    return `${prev_path}.${data_wrap.field_name}`;
+  fieldPath(prev_path, wrap_data = {}) {
+    return `${prev_path}.${wrap_data.field_name}`;
   }
 
-  selectAll(options = {}) {
-    const { data_wrap, returnDefault } = options;
-
-    const path = this.newItemsPath(data_wrap);
-
-    return baseSelector(this.reducer_name, path, returnDefault);
+  postfixPath(path, wrap_data = {}) {
+    if (wrap_data.postfix) {
+      return `${path}.${wrap_data.postfix}`;
+    }
+    return path;
   }
 
-  selectGetById(options) {
-    const { data_wrap, returnDefault } = options;
-    const path = this.newItemPath(data_wrap);
+  selectAll(wrap_data, options = {}) {
+    const { returnDefault, with_func = true } = options;
+    const path = this.makePath({
+      wrap_data,
+      isMany: true,
+    });
+    return baseSelector(this.reducer_name, path, returnDefault, { with_func });
+  }
+
+  selectItem(wrap_data, options = {}) {
+    const { returnDefault, with_func = false } = options;
+    const path = this.makePath({
+      wrap_data,
+      isMany: true,
+    });
+    return baseSelector(this.reducer_name, path, returnDefault, {
+      with_func,
+    });
+  }
+
+  selectGetById(wrap_data, options = {}) {
+    const { returnDefault, config } = options;
+    const path = this.makePath({
+      wrap_data,
+      isOne: true,
+    });
     return baseSelector(this.reducer_name, path, returnDefault, {
       with_func: false,
     });
   }
 
-  selectField(options) {
-    const { data_wrap, returnDefault } = options;
-    const path = this.newFieldPath(data_wrap);
+  selectField(wrap_data, options = {}) {
+    const { returnDefault, config } = options;
+    const path = this.makePath({
+      wrap_data,
+      isField: true,
+    });
     return baseSelector(this.reducer_name, path, returnDefault, {
       with_func: false,
     });
@@ -352,7 +344,6 @@ export class BaseModel {
   makeDelay(config, func, args) {
     const delay = config.delay;
     if (delay) {
-      console.log("this.runDebounce", this.runDebounce);
       if (this.runDebounce) {
         this.runDebounce(...args);
       } else {
