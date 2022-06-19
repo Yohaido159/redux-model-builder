@@ -9,5 +9,13 @@ Object.defineProperty(exports, "BaseModel", {
     return _baseModel.BaseModel;
   }
 });
+Object.defineProperty(exports, "processSetAddToRedux", {
+  enumerable: true,
+  get: function get() {
+    return _utils.processSetAddToRedux;
+  }
+});
 
 var _baseModel = require("./global/baseModel.models");
+
+var _utils = require("./utils/utils");

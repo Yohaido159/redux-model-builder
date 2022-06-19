@@ -5,34 +5,48 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.makeSelector = exports.makePath = exports.getFromState = exports.getFromCache = exports.factorySelector = exports.baseSelector = exports.addToCache = void 0;
+exports.strEqualSelector = exports.makeSelector = exports.makePath = exports.getFromState = exports.getFromCache = exports.factorySelector = exports.baseSelector = exports.addToCache = void 0;
 
 var _reReselect = require("re-reselect");
 
+var _reselect = require("reselect");
+
 var _lodash = _interopRequireDefault(require("lodash.get"));
 
-var baseSelector = function baseSelector(type, selector_type) {
-  return function (path, returnDefault, config) {
-    var baseId = selector_type === "base" ? "items_main" : "global_main";
+var strEqual = function strEqual(value, other) {
+  return JSON.stringify(value) === JSON.stringify(other);
+};
 
-    var func = function func(state) {
-      if (Array.isArray(state)) {
-        return state;
-      } else {
-        var res = Object.values(state || {});
-        return res;
-      }
-    };
+var selectorState = {};
 
-    return makeSelector({
-      baseId: baseId,
-      path: path,
-      returnDefault: returnDefault,
-      func: func,
-      config: config,
-      type: type
-    });
+var selectById2 = function selectById2(state, id, id2) {
+  return [id, id2];
+};
+
+var strEqualSelector = (0, _reselect.createSelectorCreator)(_reselect.defaultMemoize, strEqual);
+exports.strEqualSelector = strEqualSelector;
+
+var baseSelector = function baseSelector(reducer_name, path, returnDefault) {
+  var config = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+  var with_func = config.with_func === undefined ? true : config.with_func;
+
+  var func = function func(state) {
+    if (Array.isArray(state)) {
+      return state;
+    } else {
+      var res = Object.values(state || {});
+      return res;
+    }
   };
+
+  return makeSelector({
+    baseId: reducer_name,
+    path: path,
+    returnDefault: returnDefault,
+    with_func: with_func,
+    func: with_func ? func : null,
+    config: config
+  });
 };
 
 exports.baseSelector = baseSelector;
@@ -42,15 +56,13 @@ var makeSelector = function makeSelector() {
   var baseId = options.baseId,
       path = options.path,
       returnDefault = options.returnDefault,
-      func = options.func,
-      _options$config = options.config,
-      config = _options$config === void 0 ? {} : _options$config;
-  var _config$with_func = config.with_func,
-      with_func = _config$with_func === void 0 ? true : _config$with_func;
+      with_func = options.with_func,
+      func = options.func;
   path = makePath(path);
   baseId = "".concat(baseId).concat(path);
   var returnDefaultNew = returnDefault === undefined ? {} : returnDefault;
   var baseIdCacheKey = "".concat(baseId).concat(path, "-with_func=").concat(with_func, "-returnDefault=").concat(JSON.stringify(returnDefault));
+  console.log("🚀 ~ file: global.selector.js ~ line 43 ~ makeSelector ~ baseIdCacheKey", baseIdCacheKey);
 
   if (getFromCache(baseIdCacheKey)) {
     return getFromCache(baseIdCacheKey);
@@ -58,7 +70,7 @@ var makeSelector = function makeSelector() {
     var selector = factorySelector({
       baseId: baseId,
       returnDefault: returnDefaultNew,
-      func: with_func ? func : undefined
+      func: func
     });
     addToCache(baseIdCacheKey, selector);
     return selector;
@@ -127,13 +139,13 @@ var getChunkState = function getChunkState(baseId) {
   };
 };
 
-var getFromState = function getFromState(data, path, defaultReturn) {
+var getFromState = function getFromState(data, path, returnDefault) {
   if (path === "" || !path) {
-    return data || defaultReturn;
+    return data || returnDefault;
   }
 
   var res = (0, _lodash["default"])(data, path);
-  return res === undefined ? defaultReturn : res;
+  return res === undefined ? returnDefault : res;
 };
 
 exports.getFromState = getFromState;

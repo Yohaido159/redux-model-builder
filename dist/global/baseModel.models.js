@@ -36,10 +36,6 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 var BaseModel = /*#__PURE__*/function () {
   function BaseModel() {
     (0, _classCallCheck2["default"])(this, BaseModel);
-    (0, _defineProperty2["default"])(this, "itemsSelector", BaseModel.baseSelector("list", "base"));
-    (0, _defineProperty2["default"])(this, "itemSelector", BaseModel.baseSelector("detail", "base"));
-    (0, _defineProperty2["default"])(this, "itemsPassDataSelector", BaseModel.baseSelector("list", "passData"));
-    (0, _defineProperty2["default"])(this, "itemPassDataSelector", BaseModel.baseSelector("detail", "passData"));
     (0, _defineProperty2["default"])(this, "runDebounce", null);
     this.effect = "replace";
     this.type = undefined;
@@ -51,9 +47,6 @@ var BaseModel = /*#__PURE__*/function () {
     value: function withCache() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var cacheKey = "".concat((0, _urls.withQueryParams)((0, _urls.makeToUrl)(this.url, options.id), options.params));
-      console.log("cacheKey", cacheKey);
-      console.log("BaseModel.cacheSet", BaseModel.cacheSet);
-      console.log("config.withCache", options.config.withCache);
       return cacheKey;
     }
   }, {
@@ -157,7 +150,8 @@ var BaseModel = /*#__PURE__*/function () {
       }, options), {}, {
         config: _objectSpread({
           effect: "replace",
-          detail: false,
+          // detail: false,
+          isMany: true,
           withModel: false
         }, options.config)
       }));
@@ -171,7 +165,7 @@ var BaseModel = /*#__PURE__*/function () {
         method: "POST",
         config: _objectSpread({
           effect: "replace",
-          detail: true
+          isOne: true
         }, options.config)
       }, options));
     }
@@ -182,7 +176,7 @@ var BaseModel = /*#__PURE__*/function () {
       this.actionItem(_objectSpread({
         method: "PATCH",
         config: _objectSpread({
-          detail: true,
+          isOne: true,
           effect: "modify"
         }, options.config)
       }, options));
@@ -195,101 +189,26 @@ var BaseModel = /*#__PURE__*/function () {
         method: "DELETE"
       }, options), {}, {
         config: _objectSpread({
-          detail: true,
+          isOne: true,
           effect: "delete"
         }, options.config)
       }));
     }
   }, {
-    key: "makeType",
-    value: function makeType() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var base_type = options.base_type;
-
-      if (this.selector_type === "passData") {
-        return "GLOBAL_ADD_TO_REDUX";
-      }
-
-      return "".concat(base_type);
-    }
-  }, {
     key: "makePath",
     value: function makePath() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var fieldPath = options.fieldPath,
-          fieldPathIdx = options.fieldPathIdx,
-          detail = options.detail,
-          data = options.data;
-      var path = null;
+      var isMany = options.isMany,
+          isOne = options.isOne,
+          isField = options.isField,
+          wrap_data = options.wrap_data;
 
-      if (detail) {
-        path = this.itemPath(this.itemsPath(data), data);
-      } else {
-        path = this.itemsPath(data);
-      }
-
-      console.log("path", path);
-
-      if (fieldPath) {
-        path = this.fieldPath(path, data);
-      }
-
-      console.log("path", path);
-
-      if (fieldPathIdx && fieldPath) {
-        path = this.fieldPathIdx(path, data);
-      }
-
-      return path;
-    }
-  }, {
-    key: "itemsPath",
-    value: function itemsPath(data) {
-      if (data.more_data.base_item) {
-        if (this.selector_type === "base") {
-          return "items.".concat(data.more_data.base_item);
-        } else if (this.selector_type === "passData") {
-          return "passData.MainPage.".concat(data.more_data.base_item);
-        }
-      } else {
-        if (this.selector_type === "base") {
-          return "items.".concat(this.base_path);
-        } else if (this.selector_type === "passData") {
-          return "passData.MainPage.".concat(this.pass_data_path);
-        }
-      }
-    }
-  }, {
-    key: "itemPath",
-    value: function itemPath(path, data) {
-      if (data.more_data.id) {
-        return "".concat(path, ".").concat(data.more_data.id);
-      } else if (this.selector_type === "base") {
-        return "".concat(path, ".").concat(data.data.id);
-      } else if (this.selector_type === "passData") {
-        if (this.isList === false) {
-          return "".concat(path);
-        }
-
-        return "".concat(path, ".").concat(data.more_data.id);
-      }
-    }
-  }, {
-    key: "fieldPath",
-    value: function fieldPath(item_path, data) {
-      if (this.selector_type === "base") {
-        return "".concat(item_path, ".").concat(data.more_data.field_name);
-      } else if (this.selector_type === "passData") {
-        return "".concat(item_path, ".").concat(data.more_data.field_name);
-      }
-    }
-  }, {
-    key: "fieldPathIdx",
-    value: function fieldPathIdx(field_path, data) {
-      if (this.selector_type === "base") {
-        return "".concat(field_path, ".").concat(data.more_data.field_path_idx);
-      } else if (this.selector_type === "passData") {
-        return "".concat(field_path, ".").concat(data.more_data.field_path_idx);
+      if (isField) {
+        return this.fieldPath(this.itemPath(this.addfixPath(this.itemsPath(wrap_data), wrap_data), wrap_data), wrap_data);
+      } else if (isOne) {
+        return this.itemPath(this.addfixPath(this.itemsPath(wrap_data), wrap_data), wrap_data);
+      } else if (isMany) {
+        return this.addfixPath(this.itemsPath(wrap_data), wrap_data);
       }
     }
   }, {
@@ -300,10 +219,13 @@ var BaseModel = /*#__PURE__*/function () {
           config = _options$config2 === void 0 ? {} : _options$config2,
           data = options.data;
       var path = config.makePath ? config.makePath(config, data) : this.makePath({
-        detail: config.detail,
-        fieldPath: config.fieldPath,
-        fieldPathIdx: config.fieldPathIdx,
-        data: data
+        // detail: config.detail,
+        // fieldPath: config.fieldPath,
+        // fieldPathIdx: config.fieldPathIdx,
+        isMany: config.isMany,
+        isOne: config.isOne,
+        isField: config.isField,
+        wrap_data: data.more_data
       });
       this.makeDelay(config, BaseModel.dispatch.bind(BaseModel), [this.reduxSetActionItem(_objectSpread(_objectSpread({}, options), {}, {
         path: path
@@ -316,7 +238,8 @@ var BaseModel = /*#__PURE__*/function () {
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
           effect: "replace",
-          detail: false
+          // detail: false,
+          isMany: true
         }, options.config)
       }));
     }
@@ -326,7 +249,7 @@ var BaseModel = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
-          detail: true,
+          isOne: true,
           effect: "replace"
         }, options.config)
       }));
@@ -337,7 +260,7 @@ var BaseModel = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
-          detail: true,
+          isOne: true,
           effect: "modify"
         }, options.config)
       }));
@@ -348,7 +271,7 @@ var BaseModel = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
-          detail: true,
+          isOne: true,
           effect: "delete"
         }, options.config)
       }));
@@ -377,82 +300,105 @@ var BaseModel = /*#__PURE__*/function () {
       }, config));
     }
   }, {
-    key: "reduxSelectItem",
-    value: function reduxSelectItem() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var config = options.config,
-          more_data = options.more_data,
-          defaultValue = options.defaultValue;
+    key: "itemsPath",
+    value: function itemsPath() {
+      var wrap_data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return this.base_path;
+    }
+  }, {
+    key: "itemPath",
+    value: function itemPath(prev_path) {
+      var wrap_data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-      if (config.detail) {
-        return this.selectorItem(more_data, config, defaultValue);
-      } else {
-        return this.selectorItems(more_data, config, defaultValue);
+      if (this.is_singular) {
+        return prev_path;
       }
-    }
-  }, {
-    key: "makeSelectorPath",
-    value: function makeSelectorPath(more_data, config) {
-      var detail = config.detail;
-      var fieldPath = config.fieldPath;
-      var fieldPathIdx = config.fieldPathIdx;
-      var path = config.makePath ? config.makePath(config, {
-        data: {
-          more_data: more_data,
-          data: {}
-        }
-      }) : this.makePath({
-        fieldPath: fieldPath,
-        fieldPathIdx: fieldPathIdx,
-        detail: detail,
-        data: {
-          more_data: more_data
-        }
-      });
-      console.log("11path", path);
-      return path; // let path = "";
-      // if (more_data.base_item) {
-      //   path = `${more_data.base_item}`;
-      // } else if (this.selector_type === "base") {
-      //   path = `${this.base_path}`;
-      // } else if (this.selector_type === "passData") {
-      //   path = `${this.pass_data_path}`;
-      // }
-      // if (config.detail) {
-      //   if (this.isList === false) {
-      //   } else {
-      //     path = `${path}.${more_data.id}`;
-      //   }
-      // }
-      // if (config.fieldPath) {
-      //   path = `${path}.${more_data.field_name}`;
-      // }
-      // return path;
-    }
-  }, {
-    key: "selectorItem",
-    value: function selectorItem(more_data, config, defaultValue) {
-      if (this.selector_type === "base") {
-        return this.itemSelector(this.makeSelectorPath(more_data, config), defaultValue, config);
-      } else if (this.selector_type === "passData") {
-        return this.itemPassDataSelector(this.makeSelectorPath(more_data, config), defaultValue, config);
-      }
-    }
-  }, {
-    key: "selectorItems",
-    value: function selectorItems(more_data, config, defaultValue) {
-      console.log("this.selector_type", {
-        selector_type: this.selector_type,
-        more_data: more_data,
-        config: config,
-        defaultValue: defaultValue
-      });
 
-      if (this.selector_type === "base") {
-        return this.itemsSelector(this.makeSelectorPath(more_data, config), defaultValue, config);
-      } else if (this.selector_type === "passData") {
-        return this.itemsPassDataSelector(this.makeSelectorPath(more_data, config), defaultValue, config);
+      return "".concat(prev_path, ".").concat(wrap_data.id);
+    }
+  }, {
+    key: "fieldPath",
+    value: function fieldPath(prev_path) {
+      var wrap_data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      return "".concat(prev_path, ".").concat(wrap_data.field_name);
+    }
+  }, {
+    key: "addfixPath",
+    value: function addfixPath(path) {
+      var wrap_data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var newPath = path;
+
+      if (wrap_data.postfix) {
+        newPath = "".concat(newPath, ".").concat(wrap_data.postfix);
+      } else if (wrap_data.prefix) {
+        newPath = "".concat(wrap_data.prefix, ".").concat(newPath);
       }
+
+      if (this.selector_type === "temp") {
+        newPath = "temp.".concat(newPath);
+      }
+
+      return newPath;
+    }
+  }, {
+    key: "selectAll",
+    value: function selectAll(wrap_data) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var returnDefault = options.returnDefault,
+          _options$with_func = options.with_func,
+          with_func = _options$with_func === void 0 ? true : _options$with_func;
+      var path = this.makePath({
+        wrap_data: wrap_data,
+        isMany: true
+      });
+      return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
+        with_func: with_func
+      });
+    }
+  }, {
+    key: "selectItem",
+    value: function selectItem(wrap_data) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var returnDefault = options.returnDefault,
+          _options$with_func2 = options.with_func,
+          with_func = _options$with_func2 === void 0 ? false : _options$with_func2;
+      var path = this.makePath({
+        wrap_data: wrap_data,
+        isMany: true
+      });
+      return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
+        with_func: with_func
+      });
+    }
+  }, {
+    key: "selectGetById",
+    value: function selectGetById(wrap_data) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var returnDefault = options.returnDefault,
+          config = options.config;
+      var path = this.makePath({
+        wrap_data: wrap_data,
+        isOne: true
+      });
+      return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
+        with_func: false
+      });
+    }
+  }, {
+    key: "selectField",
+    value: function selectField(wrap_data) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var _options$returnDefaul = options.returnDefault,
+          returnDefault = _options$returnDefaul === void 0 ? "" : _options$returnDefaul,
+          config = options.config;
+      var path = this.makePath({
+        wrap_data: wrap_data,
+        isField: true
+      });
+      console.log("🚀 ~ file: baseModel.models.js ~ line 321 ~ BaseModel ~ selectField ~ returnDefault", returnDefault);
+      return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
+        with_func: false
+      });
     }
   }, {
     key: "preProcessData",
@@ -465,8 +411,6 @@ var BaseModel = /*#__PURE__*/function () {
       var delay = config.delay;
 
       if (delay) {
-        console.log("this.runDebounce", this.runDebounce);
-
         if (this.runDebounce) {
           this.runDebounce.apply(this, (0, _toConsumableArray2["default"])(args));
         } else {
@@ -482,11 +426,6 @@ var BaseModel = /*#__PURE__*/function () {
       if (dispatch) {
         this._dispatch = dispatch;
       }
-    }
-  }, {
-    key: "baseSelector",
-    value: function baseSelector(type, type_selector) {
-      return (0, _global2.baseSelector)(type, type_selector);
     }
   }, {
     key: "dispatch",
