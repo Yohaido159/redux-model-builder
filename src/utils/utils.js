@@ -4,12 +4,12 @@ import setWith from "lodash.setwith";
 import filter from "lodash.filter";
 import unset from "lodash.unset";
 
-export const getFromState = (data, path, defaultReturn) => {
+export const getFromState = (data, path, returnDefault) => {
   if (path === "" || !path) {
-    return data || defaultReturn;
+    return data || returnDefault;
   }
   const res = get(data, path);
-  return res === undefined ? defaultReturn : res;
+  return res === undefined ? returnDefault : res;
 };
 
 export const processSetAddToRedux = (action, state) => {
@@ -49,16 +49,15 @@ export const processSetAddToRedux = (action, state) => {
       break;
     case "modifyList":
       arr = get(state, path);
-      console.log("arr", arr);
       if (typeof arr === "object" && isObjEmpty(arr)) {
         arr = [];
         set(state, path, arr);
+      } else if (arr === undefined) {
+        arr = [];
       }
       arr.push(...data);
       set(state, path, arr);
-      // let currentList = get(state, path);
-      // let newList = merge(currentList, data);
-      // set(state, path, newList);
+
       break;
     case "deleteNested":
       for (let item of nestedList) {
@@ -95,4 +94,16 @@ export const isObjEmpty = (obj) => {
 export const removeByIndex = (list, idx) => {
   list.splice(idx, 1);
   return list;
+};
+
+export const processFunctions = (funcs, data) => {
+  // let res = "";
+  // for (const func of funcs) {
+  //   res = func(res, data);
+  // }
+  const res = funcs.reduce((acc, cur) => {
+    acc = cur(acc, data);
+    return acc;
+  }, "");
+  return res;
 };

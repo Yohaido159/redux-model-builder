@@ -40,6 +40,10 @@ export const makeSelector = (options = {}) => {
   const baseIdCacheKey = `${baseId}${path}-with_func=${with_func}-returnDefault=${JSON.stringify(
     returnDefault
   )}`;
+  console.log(
+    "🚀 ~ file: global.selector.js ~ line 43 ~ makeSelector ~ baseIdCacheKey",
+    baseIdCacheKey
+  );
 
   if (getFromCache(baseIdCacheKey)) {
     return getFromCache(baseIdCacheKey);
@@ -99,10 +103,10 @@ export const addToCache = (path, selector) => {
 const getChunkState = (baseId) => (state) => {
   return get(state, baseId);
 };
-export const getFromState = (data, path, defaultReturn) => {
+export const getFromState = (data, path, returnDefault) => {
   if (path === "" || !path) {
-    return data || defaultReturn;
+    return data || returnDefault;
   }
   const res = get(data, path);
-  return res === undefined ? defaultReturn : res;
+  return res === undefined ? returnDefault : res;
 };

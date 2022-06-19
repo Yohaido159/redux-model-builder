@@ -62,6 +62,7 @@ var makeSelector = function makeSelector() {
   baseId = "".concat(baseId).concat(path);
   var returnDefaultNew = returnDefault === undefined ? {} : returnDefault;
   var baseIdCacheKey = "".concat(baseId).concat(path, "-with_func=").concat(with_func, "-returnDefault=").concat(JSON.stringify(returnDefault));
+  console.log("🚀 ~ file: global.selector.js ~ line 43 ~ makeSelector ~ baseIdCacheKey", baseIdCacheKey);
 
   if (getFromCache(baseIdCacheKey)) {
     return getFromCache(baseIdCacheKey);
@@ -138,13 +139,13 @@ var getChunkState = function getChunkState(baseId) {
   };
 };
 
-var getFromState = function getFromState(data, path, defaultReturn) {
+var getFromState = function getFromState(data, path, returnDefault) {
   if (path === "" || !path) {
-    return data || defaultReturn;
+    return data || returnDefault;
   }
 
   var res = (0, _lodash["default"])(data, path);
-  return res === undefined ? defaultReturn : res;
+  return res === undefined ? returnDefault : res;
 };
 
 exports.getFromState = getFromState;

@@ -165,7 +165,6 @@ var BaseModel = /*#__PURE__*/function () {
         method: "POST",
         config: _objectSpread({
           effect: "replace",
-          // detail: true,
           isOne: true
         }, options.config)
       }, options));
@@ -177,7 +176,6 @@ var BaseModel = /*#__PURE__*/function () {
       this.actionItem(_objectSpread({
         method: "PATCH",
         config: _objectSpread({
-          // detail: true,
           isOne: true,
           effect: "modify"
         }, options.config)
@@ -191,23 +189,10 @@ var BaseModel = /*#__PURE__*/function () {
         method: "DELETE"
       }, options), {}, {
         config: _objectSpread({
-          // detail: true,
           isOne: true,
           effect: "delete"
         }, options.config)
       }));
-    }
-  }, {
-    key: "makeType",
-    value: function makeType() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var base_type = options.base_type;
-
-      if (this.selector_type === "passData") {
-        return "GLOBAL_ADD_TO_REDUX";
-      }
-
-      return "".concat(base_type);
     }
   }, {
     key: "makePath",
@@ -219,11 +204,11 @@ var BaseModel = /*#__PURE__*/function () {
           wrap_data = options.wrap_data;
 
       if (isField) {
-        return this.fieldPath(this.itemPath(this.postfixPath(this.itemsPath(wrap_data), wrap_data), wrap_data), wrap_data);
+        return this.fieldPath(this.itemPath(this.addfixPath(this.itemsPath(wrap_data), wrap_data), wrap_data), wrap_data);
       } else if (isOne) {
-        return this.itemPath(this.postfixPath(this.itemsPath(wrap_data), wrap_data), wrap_data);
+        return this.itemPath(this.addfixPath(this.itemsPath(wrap_data), wrap_data), wrap_data);
       } else if (isMany) {
-        return this.postfixPath(this.itemsPath(wrap_data), wrap_data);
+        return this.addfixPath(this.itemsPath(wrap_data), wrap_data);
       }
     }
   }, {
@@ -264,7 +249,6 @@ var BaseModel = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
-          // detail: true,
           isOne: true,
           effect: "replace"
         }, options.config)
@@ -276,7 +260,6 @@ var BaseModel = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
-          // detail: true,
           isOne: true,
           effect: "modify"
         }, options.config)
@@ -288,7 +271,6 @@ var BaseModel = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
-          // detail: true,
           isOne: true,
           effect: "delete"
         }, options.config)
@@ -341,15 +323,22 @@ var BaseModel = /*#__PURE__*/function () {
       return "".concat(prev_path, ".").concat(wrap_data.field_name);
     }
   }, {
-    key: "postfixPath",
-    value: function postfixPath(path) {
+    key: "addfixPath",
+    value: function addfixPath(path) {
       var wrap_data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var newPath = path;
 
       if (wrap_data.postfix) {
-        return "".concat(path, ".").concat(wrap_data.postfix);
+        newPath = "".concat(newPath, ".").concat(wrap_data.postfix);
+      } else if (wrap_data.prefix) {
+        newPath = "".concat(wrap_data.prefix, ".").concat(newPath);
       }
 
-      return path;
+      if (this.selector_type === "temp") {
+        newPath = "temp.".concat(newPath);
+      }
+
+      return newPath;
     }
   }, {
     key: "selectAll",
@@ -399,13 +388,14 @@ var BaseModel = /*#__PURE__*/function () {
     key: "selectField",
     value: function selectField(wrap_data) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var returnDefault = options.returnDefault,
+      var _options$returnDefaul = options.returnDefault,
+          returnDefault = _options$returnDefaul === void 0 ? "" : _options$returnDefaul,
           config = options.config;
       var path = this.makePath({
         wrap_data: wrap_data,
         isField: true
       });
-      console.log("🚀 ~ file: baseModel.models.js ~ line 333 ~ BaseModel ~ selectField ~ path", path);
+      console.log("🚀 ~ file: baseModel.models.js ~ line 321 ~ BaseModel ~ selectField ~ returnDefault", returnDefault);
       return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
         with_func: false
       });

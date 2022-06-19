@@ -5,7 +5,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.removeByIndex = exports.processSetAddToRedux = exports.isObjEmpty = exports.getFromState = void 0;
+exports.removeByIndex = exports.processSetAddToRedux = exports.processFunctions = exports.isObjEmpty = exports.getFromState = void 0;
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
@@ -33,13 +33,13 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2["default"])(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
-var getFromState = function getFromState(data, path, defaultReturn) {
+var getFromState = function getFromState(data, path, returnDefault) {
   if (path === "" || !path) {
-    return data || defaultReturn;
+    return data || returnDefault;
   }
 
   var res = (0, _lodash["default"])(data, path);
-  return res === undefined ? defaultReturn : res;
+  return res === undefined ? returnDefault : res;
 };
 
 exports.getFromState = getFromState;
@@ -102,19 +102,17 @@ var processSetAddToRedux = function processSetAddToRedux(action, state) {
 
     case "modifyList":
       arr = (0, _lodash["default"])(state, path);
-      console.log("arr", arr);
 
       if ((0, _typeof2["default"])(arr) === "object" && isObjEmpty(arr)) {
         arr = [];
         (0, _lodash2["default"])(state, path, arr);
+      } else if (arr === undefined) {
+        arr = [];
       }
 
       (_arr = arr).push.apply(_arr, (0, _toConsumableArray2["default"])(data));
 
-      (0, _lodash2["default"])(state, path, arr); // let currentList = get(state, path);
-      // let newList = merge(currentList, data);
-      // set(state, path, newList);
-
+      (0, _lodash2["default"])(state, path, arr);
       break;
 
     case "deleteNested":
@@ -177,3 +175,17 @@ var removeByIndex = function removeByIndex(list, idx) {
 };
 
 exports.removeByIndex = removeByIndex;
+
+var processFunctions = function processFunctions(funcs, data) {
+  // let res = "";
+  // for (const func of funcs) {
+  //   res = func(res, data);
+  // }
+  var res = funcs.reduce(function (acc, cur) {
+    acc = cur(acc, data);
+    return acc;
+  }, "");
+  return res;
+};
+
+exports.processFunctions = processFunctions;

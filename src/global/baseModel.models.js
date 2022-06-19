@@ -3,7 +3,7 @@ import { sendToProcessAction, wrapAction } from "saga-axios/dist/core";
 import debounce from "lodash.debounce";
 
 import { makeToUrl, withQueryParams } from "../utils/urls";
-import { getFromState } from "../utils/utils";
+import { getFromState, processFunctions } from "../utils/utils";
 import { setAddToRedux } from "./global.actions";
 import { baseSelector } from "./global.selector";
 
@@ -130,7 +130,7 @@ export class BaseModel {
       method: "POST",
       config: {
         effect: "replace",
-        // detail: true,
+
         isOne: true,
         ...options.config,
       },
@@ -142,7 +142,6 @@ export class BaseModel {
     this.actionItem({
       method: "PATCH",
       config: {
-        // detail: true,
         isOne: true,
         effect: "modify",
         ...options.config,
@@ -156,7 +155,6 @@ export class BaseModel {
       method: "DELETE",
       ...options,
       config: {
-        // detail: true,
         isOne: true,
         effect: "delete",
         ...options.config,
@@ -164,32 +162,23 @@ export class BaseModel {
     });
   }
 
-  makeType(options = {}) {
-    const { base_type } = options;
-    if (this.selector_type === "passData") {
-      return "GLOBAL_ADD_TO_REDUX";
-    }
-    return `${base_type}`;
-  }
-
   makePath(options = {}) {
     const { isMany, isOne, isField, wrap_data } = options;
-
     if (isField) {
       return this.fieldPath(
         this.itemPath(
-          this.postfixPath(this.itemsPath(wrap_data), wrap_data),
+          this.addfixPath(this.itemsPath(wrap_data), wrap_data),
           wrap_data
         ),
         wrap_data
       );
     } else if (isOne) {
       return this.itemPath(
-        this.postfixPath(this.itemsPath(wrap_data), wrap_data),
+        this.addfixPath(this.itemsPath(wrap_data), wrap_data),
         wrap_data
       );
     } else if (isMany) {
-      return this.postfixPath(this.itemsPath(wrap_data), wrap_data);
+      return this.addfixPath(this.itemsPath(wrap_data), wrap_data);
     }
   }
 
@@ -229,7 +218,6 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        // detail: true,
         isOne: true,
         effect: "replace",
         ...options.config,
@@ -240,7 +228,6 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        // detail: true,
         isOne: true,
         effect: "modify",
         ...options.config,
@@ -251,7 +238,6 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        // detail: true,
         isOne: true,
         effect: "delete",
         ...options.config,
@@ -286,11 +272,17 @@ export class BaseModel {
     return `${prev_path}.${wrap_data.field_name}`;
   }
 
-  postfixPath(path, wrap_data = {}) {
+  addfixPath(path, wrap_data = {}) {
+    let newPath = path;
     if (wrap_data.postfix) {
-      return `${path}.${wrap_data.postfix}`;
+      newPath = `${newPath}.${wrap_data.postfix}`;
+    } else if (wrap_data.prefix) {
+      newPath = `${wrap_data.prefix}.${newPath}`;
     }
-    return path;
+    if (this.selector_type === "temp") {
+      newPath = `temp.${newPath}`;
+    }
+    return newPath;
   }
 
   selectAll(wrap_data, options = {}) {
@@ -325,11 +317,15 @@ export class BaseModel {
   }
 
   selectField(wrap_data, options = {}) {
-    const { returnDefault, config } = options;
+    const { returnDefault = "", config } = options;
     const path = this.makePath({
       wrap_data,
       isField: true,
     });
+    console.log(
+      "🚀 ~ file: baseModel.models.js ~ line 321 ~ BaseModel ~ selectField ~ returnDefault",
+      returnDefault
+    );
     return baseSelector(this.reducer_name, path, returnDefault, {
       with_func: false,
     });
