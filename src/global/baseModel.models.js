@@ -3,7 +3,7 @@ import { sendToProcessAction, wrapAction } from "saga-axios/dist/core";
 import debounce from "lodash.debounce";
 
 import { makeToUrl, withQueryParams } from "../utils/urls";
-import { getFromState } from "../utils/utils";
+import { getFromState, processFunctions } from "../utils/utils";
 import { setAddToRedux } from "./global.actions";
 import { baseSelector } from "./global.selector";
 
@@ -22,15 +22,7 @@ export class BaseModel {
       this._dispatch = dispatch;
     }
   }
-  static set setBaseSelector(baseSelector) {
-    if (baseSelector) {
-      this._baseSelector = baseSelector;
-    }
-  }
-  static baseSelector(type, type_selector) {
-    console.log("type, type_selector", type, type_selector);
-    return this._baseSelector(type, type_selector);
-  }
+
   static dispatch(options) {
     return this._dispatch(options);
   }
@@ -42,9 +34,6 @@ export class BaseModel {
       makeToUrl(this.url, options.id),
       options.params
     )}`;
-    console.log("cacheKey", cacheKey);
-    console.log("BaseModel.cacheSet", BaseModel.cacheSet);
-    console.log("config.withCache", options.config.withCache);
     return cacheKey;
   }
 
@@ -127,7 +116,8 @@ export class BaseModel {
       ...options,
       config: {
         effect: "replace",
-        detail: false,
+        // detail: false,
+        isMany: true,
         withModel: false,
         ...options.config,
       },
@@ -140,7 +130,8 @@ export class BaseModel {
       method: "POST",
       config: {
         effect: "replace",
-        detail: true,
+
+        isOne: true,
         ...options.config,
       },
       ...options,
@@ -151,7 +142,7 @@ export class BaseModel {
     this.actionItem({
       method: "PATCH",
       config: {
-        detail: true,
+        isOne: true,
         effect: "modify",
         ...options.config,
       },
@@ -164,83 +155,30 @@ export class BaseModel {
       method: "DELETE",
       ...options,
       config: {
-        detail: true,
+        isOne: true,
         effect: "delete",
         ...options.config,
       },
     });
   }
 
-  makeType(options = {}) {
-    const { base_type } = options;
-    if (this.selector_type === "passData") {
-      return "GLOBAL_ADD_TO_REDUX";
-    }
-    return `${base_type}`;
-  }
-
   makePath(options = {}) {
-    const { fieldPath, fieldPathIdx, detail, data } = options;
-    let path = null;
-
-    if (detail) {
-      path = this.itemPath(this.itemsPath(data), data);
-    } else {
-      path = this.itemsPath(data);
-    }
-    console.log("path", path);
-
-    if (fieldPath) {
-      path = this.fieldPath(path, data);
-    }
-    console.log("path", path);
-    if (fieldPathIdx && fieldPath) {
-      path = this.fieldPathIdx(path, data);
-    }
-    return path;
-  }
-
-  itemsPath(data) {
-    if (data.more_data.base_item) {
-      if (this.selector_type === "base") {
-        return `items.${data.more_data.base_item}`;
-      } else if (this.selector_type === "passData") {
-        return `passData.MainPage.${data.more_data.base_item}`;
-      }
-    } else {
-      if (this.selector_type === "base") {
-        return `items.${this.base_path}`;
-      } else if (this.selector_type === "passData") {
-        return `passData.MainPage.${this.pass_data_path}`;
-      }
-    }
-  }
-
-  itemPath(path, data) {
-    if (data.more_data.id) {
-      return `${path}.${data.more_data.id}`;
-    } else if (this.selector_type === "base") {
-      return `${path}.${data.data.id}`;
-    } else if (this.selector_type === "passData") {
-      if (this.isList === false) {
-        return `${path}`;
-      }
-      return `${path}.${data.more_data.id}`;
-    }
-  }
-
-  fieldPath(item_path, data) {
-    if (this.selector_type === "base") {
-      return `${item_path}.${data.more_data.field_name}`;
-    } else if (this.selector_type === "passData") {
-      return `${item_path}.${data.more_data.field_name}`;
-    }
-  }
-  fieldPathIdx(field_path, data) {
-    if (this.selector_type === "base") {
-      return `${field_path}.${data.more_data.field_path_idx}`;
-    } else if (this.selector_type === "passData") {
-      return `${field_path}.${data.more_data.field_path_idx}`;
+    const { isMany, isOne, isField, wrap_data } = options;
+    if (isField) {
+      return this.fieldPath(
+        this.itemPath(
+          this.addfixPath(this.itemsPath(wrap_data), wrap_data),
+          wrap_data
+        ),
+        wrap_data
+      );
+    } else if (isOne) {
+      return this.itemPath(
+        this.addfixPath(this.itemsPath(wrap_data), wrap_data),
+        wrap_data
+      );
+    } else if (isMany) {
+      return this.addfixPath(this.itemsPath(wrap_data), wrap_data);
     }
   }
 
@@ -249,10 +187,13 @@ export class BaseModel {
     let path = config.makePath
       ? config.makePath(config, data)
       : this.makePath({
-          detail: config.detail,
-          fieldPath: config.fieldPath,
-          fieldPathIdx: config.fieldPathIdx,
-          data,
+          // detail: config.detail,
+          // fieldPath: config.fieldPath,
+          // fieldPathIdx: config.fieldPathIdx,
+          isMany: config.isMany,
+          isOne: config.isOne,
+          isField: config.isField,
+          wrap_data: data.more_data,
         });
     this.makeDelay(config, BaseModel.dispatch.bind(BaseModel), [
       this.reduxSetActionItem({
@@ -267,7 +208,8 @@ export class BaseModel {
       ...options,
       config: {
         effect: "replace",
-        detail: false,
+        // detail: false,
+        isMany: true,
         ...options.config,
       },
     });
@@ -276,7 +218,7 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        detail: true,
+        isOne: true,
         effect: "replace",
         ...options.config,
       },
@@ -286,7 +228,7 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        detail: true,
+        isOne: true,
         effect: "modify",
         ...options.config,
       },
@@ -296,7 +238,7 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        detail: true,
+        isOne: true,
         effect: "delete",
         ...options.config,
       },
@@ -315,96 +257,79 @@ export class BaseModel {
     });
   }
 
-  reduxSelectItem(options = {}) {
-    const { config, more_data, defaultValue } = options;
-    if (config.detail) {
-      return this.selectorItem(more_data, config, defaultValue);
-    } else {
-      return this.selectorItems(more_data, config, defaultValue);
+  itemsPath(wrap_data = {}) {
+    return this.base_path;
+  }
+
+  itemPath(prev_path, wrap_data = {}) {
+    if (this.is_singular) {
+      return prev_path;
     }
+    return `${prev_path}.${wrap_data.id}`;
   }
 
-  makeSelectorPath(more_data, config) {
-    const detail = config.detail;
-    const fieldPath = config.fieldPath;
-    const fieldPathIdx = config.fieldPathIdx;
-    let path = config.makePath
-      ? config.makePath(config, { data: { more_data, data: {} } })
-      : this.makePath({
-          fieldPath,
-          fieldPathIdx,
-          detail,
-          data: {
-            more_data,
-          },
-        });
-    console.log("11path", path);
-    return path;
-
-    // let path = "";
-    // if (more_data.base_item) {
-    //   path = `${more_data.base_item}`;
-    // } else if (this.selector_type === "base") {
-    //   path = `${this.base_path}`;
-    // } else if (this.selector_type === "passData") {
-    //   path = `${this.pass_data_path}`;
-    // }
-    // if (config.detail) {
-    //   if (this.isList === false) {
-    //   } else {
-    //     path = `${path}.${more_data.id}`;
-    //   }
-    // }
-    // if (config.fieldPath) {
-    //   path = `${path}.${more_data.field_name}`;
-    // }
-    // return path;
-
-    
+  fieldPath(prev_path, wrap_data = {}) {
+    return `${prev_path}.${wrap_data.field_name}`;
   }
 
-  selectorItem(more_data, config, defaultValue) {
-    if (this.selector_type === "base") {
-      return this.itemSelector(
-        this.makeSelectorPath(more_data, config),
-        defaultValue,
-        config
-      );
-    } else if (this.selector_type === "passData") {
-      return this.itemPassDataSelector(
-        this.makeSelectorPath(more_data, config),
-        defaultValue,
-        config
-      );
+  addfixPath(path, wrap_data = {}) {
+    let newPath = path;
+    if (wrap_data.postfix) {
+      newPath = `${newPath}.${wrap_data.postfix}`;
+    } else if (wrap_data.prefix) {
+      newPath = `${wrap_data.prefix}.${newPath}`;
     }
+    if (this.selector_type === "temp") {
+      newPath = `temp.${newPath}`;
+    }
+    return newPath;
   }
-  selectorItems(more_data, config, defaultValue) {
-    console.log("this.selector_type", {
-      selector_type: this.selector_type,
-      more_data,
-      config,
-      defaultValue,
+
+  selectAll(wrap_data, options = {}) {
+    const { returnDefault, with_func = true } = options;
+    const path = this.makePath({
+      wrap_data,
+      isMany: true,
     });
-    if (this.selector_type === "base") {
-      return this.itemsSelector(
-        this.makeSelectorPath(more_data, config),
-        defaultValue,
-        config
-      );
-    } else if (this.selector_type === "passData") {
-      return this.itemsPassDataSelector(
-        this.makeSelectorPath(more_data, config),
-        defaultValue,
-        config
-      );
-    }
+    return baseSelector(this.reducer_name, path, returnDefault, { with_func });
   }
 
-  itemsSelector = BaseModel.baseSelector("list", "base");
-  itemSelector = BaseModel.baseSelector("detail", "base");
+  selectItem(wrap_data, options = {}) {
+    const { returnDefault, with_func = false } = options;
+    const path = this.makePath({
+      wrap_data,
+      isMany: true,
+    });
+    return baseSelector(this.reducer_name, path, returnDefault, {
+      with_func,
+    });
+  }
 
-  itemsPassDataSelector = BaseModel.baseSelector("list", "passData");
-  itemPassDataSelector = BaseModel.baseSelector("detail", "passData");
+  selectGetById(wrap_data, options = {}) {
+    const { returnDefault, config } = options;
+    const path = this.makePath({
+      wrap_data,
+      isOne: true,
+    });
+    return baseSelector(this.reducer_name, path, returnDefault, {
+      with_func: false,
+    });
+  }
+
+  selectField(wrap_data, options = {}) {
+    const { returnDefault = "", config } = options;
+    const path = this.makePath({
+      wrap_data,
+      isField: true,
+    });
+    console.log(
+      "🚀 ~ file: baseModel.models.js ~ line 321 ~ BaseModel ~ selectField ~ returnDefault",
+      returnDefault
+    );
+    return baseSelector(this.reducer_name, path, returnDefault, {
+      with_func: false,
+    });
+  }
 
   preProcessData(data, config) {
     return data;
@@ -415,7 +340,6 @@ export class BaseModel {
   makeDelay(config, func, args) {
     const delay = config.delay;
     if (delay) {
-      console.log("this.runDebounce", this.runDebounce);
       if (this.runDebounce) {
         this.runDebounce(...args);
       } else {
