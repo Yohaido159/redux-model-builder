@@ -150,8 +150,7 @@ var BaseModel = /*#__PURE__*/function () {
       }, options), {}, {
         config: _objectSpread({
           effect: "replace",
-          // detail: false,
-          isMany: true,
+          type_path: "isMany",
           withModel: false
         }, options.config)
       }));
@@ -165,7 +164,7 @@ var BaseModel = /*#__PURE__*/function () {
         method: "POST",
         config: _objectSpread({
           effect: "replace",
-          isOne: true
+          type_path: "isOne"
         }, options.config)
       }, options));
     }
@@ -176,7 +175,7 @@ var BaseModel = /*#__PURE__*/function () {
       this.actionItem(_objectSpread({
         method: "PATCH",
         config: _objectSpread({
-          isOne: true,
+          type_path: "isOne",
           effect: "modify"
         }, options.config)
       }, options));
@@ -189,7 +188,7 @@ var BaseModel = /*#__PURE__*/function () {
         method: "DELETE"
       }, options), {}, {
         config: _objectSpread({
-          isOne: true,
+          type_path: "isOne",
           effect: "delete"
         }, options.config)
       }));
@@ -198,16 +197,14 @@ var BaseModel = /*#__PURE__*/function () {
     key: "makePath",
     value: function makePath() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var isMany = options.isMany,
-          isOne = options.isOne,
-          isField = options.isField,
+      var type_path = options.type_path,
           wrap_data = options.wrap_data;
 
-      if (isField) {
+      if (type_path === "isField") {
         return this.fieldPath(this.itemPath(this.addfixPath(this.itemsPath(wrap_data), wrap_data), wrap_data), wrap_data);
-      } else if (isOne) {
+      } else if (type_path === "isOne") {
         return this.itemPath(this.addfixPath(this.itemsPath(wrap_data), wrap_data), wrap_data);
-      } else if (isMany) {
+      } else if (type_path === "isMany") {
         return this.addfixPath(this.itemsPath(wrap_data), wrap_data);
       }
     }
@@ -219,12 +216,7 @@ var BaseModel = /*#__PURE__*/function () {
           config = _options$config2 === void 0 ? {} : _options$config2,
           data = options.data;
       var path = config.makePath ? config.makePath(config, data) : this.makePath({
-        // detail: config.detail,
-        // fieldPath: config.fieldPath,
-        // fieldPathIdx: config.fieldPathIdx,
-        isMany: config.isMany,
-        isOne: config.isOne,
-        isField: config.isField,
+        type_path: config.type_path,
         wrap_data: data.more_data
       });
       this.makeDelay(config, BaseModel.dispatch.bind(BaseModel), [this.reduxSetActionItem(_objectSpread(_objectSpread({}, options), {}, {
@@ -239,7 +231,7 @@ var BaseModel = /*#__PURE__*/function () {
         config: _objectSpread({
           effect: "replace",
           // detail: false,
-          isMany: true
+          type_path: "isMany"
         }, options.config)
       }));
     }
@@ -249,7 +241,7 @@ var BaseModel = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
-          isOne: true,
+          type_path: "isOne",
           effect: "replace"
         }, options.config)
       }));
@@ -260,7 +252,7 @@ var BaseModel = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
-          isOne: true,
+          type_path: "isOne",
           effect: "modify"
         }, options.config)
       }));
@@ -271,7 +263,7 @@ var BaseModel = /*#__PURE__*/function () {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       this.reduxActionItem(_objectSpread(_objectSpread({}, options), {}, {
         config: _objectSpread({
-          isOne: true,
+          type_path: "isOne",
           effect: "delete"
         }, options.config)
       }));
@@ -349,7 +341,7 @@ var BaseModel = /*#__PURE__*/function () {
           with_func = _options$with_func === void 0 ? true : _options$with_func;
       var path = this.makePath({
         wrap_data: wrap_data,
-        isMany: true
+        type_path: "isMany"
       });
       return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
         with_func: with_func
@@ -364,7 +356,7 @@ var BaseModel = /*#__PURE__*/function () {
           with_func = _options$with_func2 === void 0 ? false : _options$with_func2;
       var path = this.makePath({
         wrap_data: wrap_data,
-        isMany: true
+        type_path: "isMany"
       });
       return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
         with_func: with_func
@@ -378,7 +370,7 @@ var BaseModel = /*#__PURE__*/function () {
           config = options.config;
       var path = this.makePath({
         wrap_data: wrap_data,
-        isOne: true
+        type_path: "isOne"
       });
       return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {
         with_func: false
@@ -393,7 +385,7 @@ var BaseModel = /*#__PURE__*/function () {
           config = options.config;
       var path = this.makePath({
         wrap_data: wrap_data,
-        isField: true
+        type_path: "isField"
       });
       console.log("🚀 ~ file: baseModel.models.js ~ line 321 ~ BaseModel ~ selectField ~ returnDefault", returnDefault);
       return (0, _global2.baseSelector)(this.reducer_name, path, returnDefault, {

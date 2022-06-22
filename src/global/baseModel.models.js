@@ -116,8 +116,7 @@ export class BaseModel {
       ...options,
       config: {
         effect: "replace",
-        // detail: false,
-        isMany: true,
+        type_path: "isMany",
         withModel: false,
         ...options.config,
       },
@@ -130,8 +129,7 @@ export class BaseModel {
       method: "POST",
       config: {
         effect: "replace",
-
-        isOne: true,
+        type_path: "isOne",
         ...options.config,
       },
       ...options,
@@ -142,7 +140,7 @@ export class BaseModel {
     this.actionItem({
       method: "PATCH",
       config: {
-        isOne: true,
+        type_path: "isOne",
         effect: "modify",
         ...options.config,
       },
@@ -155,7 +153,7 @@ export class BaseModel {
       method: "DELETE",
       ...options,
       config: {
-        isOne: true,
+        type_path: "isOne",
         effect: "delete",
         ...options.config,
       },
@@ -163,8 +161,9 @@ export class BaseModel {
   }
 
   makePath(options = {}) {
-    const { isMany, isOne, isField, wrap_data } = options;
-    if (isField) {
+    const { type_path, wrap_data } = options;
+
+    if (type_path === "isField") {
       return this.fieldPath(
         this.itemPath(
           this.addfixPath(this.itemsPath(wrap_data), wrap_data),
@@ -172,12 +171,12 @@ export class BaseModel {
         ),
         wrap_data
       );
-    } else if (isOne) {
+    } else if (type_path === "isOne") {
       return this.itemPath(
         this.addfixPath(this.itemsPath(wrap_data), wrap_data),
         wrap_data
       );
-    } else if (isMany) {
+    } else if (type_path === "isMany") {
       return this.addfixPath(this.itemsPath(wrap_data), wrap_data);
     }
   }
@@ -187,12 +186,7 @@ export class BaseModel {
     let path = config.makePath
       ? config.makePath(config, data)
       : this.makePath({
-          // detail: config.detail,
-          // fieldPath: config.fieldPath,
-          // fieldPathIdx: config.fieldPathIdx,
-          isMany: config.isMany,
-          isOne: config.isOne,
-          isField: config.isField,
+          type_path: config.type_path,
           wrap_data: data.more_data,
         });
     this.makeDelay(config, BaseModel.dispatch.bind(BaseModel), [
@@ -209,7 +203,7 @@ export class BaseModel {
       config: {
         effect: "replace",
         // detail: false,
-        isMany: true,
+        type_path: "isMany",
         ...options.config,
       },
     });
@@ -218,7 +212,7 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        isOne: true,
+        type_path: "isOne",
         effect: "replace",
         ...options.config,
       },
@@ -228,7 +222,7 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        isOne: true,
+        type_path: "isOne",
         effect: "modify",
         ...options.config,
       },
@@ -238,7 +232,7 @@ export class BaseModel {
     this.reduxActionItem({
       ...options,
       config: {
-        isOne: true,
+        type_path: "isOne",
         effect: "delete",
         ...options.config,
       },
@@ -289,7 +283,7 @@ export class BaseModel {
     const { returnDefault, with_func = true } = options;
     const path = this.makePath({
       wrap_data,
-      isMany: true,
+      type_path: "isMany",
     });
     return baseSelector(this.reducer_name, path, returnDefault, { with_func });
   }
@@ -298,7 +292,7 @@ export class BaseModel {
     const { returnDefault, with_func = false } = options;
     const path = this.makePath({
       wrap_data,
-      isMany: true,
+      type_path: "isMany",
     });
     return baseSelector(this.reducer_name, path, returnDefault, {
       with_func,
@@ -309,7 +303,7 @@ export class BaseModel {
     const { returnDefault, config } = options;
     const path = this.makePath({
       wrap_data,
-      isOne: true,
+      type_path: "isOne",
     });
     return baseSelector(this.reducer_name, path, returnDefault, {
       with_func: false,
@@ -320,7 +314,7 @@ export class BaseModel {
     const { returnDefault = "", config } = options;
     const path = this.makePath({
       wrap_data,
-      isField: true,
+      type_path: "isField",
     });
     console.log(
       "🚀 ~ file: baseModel.models.js ~ line 321 ~ BaseModel ~ selectField ~ returnDefault",
