@@ -17,6 +17,7 @@ export const processSetAddToRedux = (action, state) => {
   const data = action.payload.data;
   const effect = action.payload.effect;
   const nestedList = action.payload.nestedList;
+  const func = action.payload.func;
 
   let arr = [];
 
@@ -81,6 +82,10 @@ export const processSetAddToRedux = (action, state) => {
       break;
     default:
       break;
+  }
+  if (func) {
+    const res = func(state);
+    // if (res === "exit") return;
   }
 };
 

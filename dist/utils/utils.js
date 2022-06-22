@@ -51,6 +51,7 @@ var processSetAddToRedux = function processSetAddToRedux(action, state) {
   var data = action.payload.data;
   var effect = action.payload.effect;
   var nestedList = action.payload.nestedList;
+  var func = action.payload.func;
   var arr = [];
 
   switch (effect) {
@@ -154,6 +155,10 @@ var processSetAddToRedux = function processSetAddToRedux(action, state) {
 
     default:
       break;
+  }
+
+  if (func) {
+    var res = func(state); // if (res === "exit") return;
   }
 };
 
